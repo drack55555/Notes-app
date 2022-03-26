@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:notesapp/firebase_options.dart';
+import 'package:notesapp/login_view.dart';
+import 'package:notesapp/register_view.dart';
+import 'package:notesapp/verify_email_view.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); //firebase suru mai he initialized hojayega 
@@ -11,7 +14,12 @@ void main() {
         primarySwatch: Colors.green,    //tension ni.
       ),
       home: const HomePage(),
-    ));
+      routes: {
+        '/login': (context)=> const LoginView(),
+        '/register': (context)=> const RegisterView(),
+      },
+    ),
+  );
 }
     //All details for Register will be here in RegisterView.....
     //All details for Login will be here in LoginView.....
@@ -23,28 +31,31 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      body: FutureBuilder(
+    return FutureBuilder(
         future: Firebase.initializeApp(     //ye kra kuki firebase initialize sbse phle krna
           options: DefaultFirebaseOptions.currentPlatform,   //tha and us k baad he login/
         ),                                  //register screen bnana tha(line 6 in MAIN.dart)...
-        builder: (context, snapshot) {      //ye phle hojao phir aage ka build kro 
-          switch(snapshot.connectionState){  //jab future finished ho chuka work krna
-            case ConnectionState.done:
+        builder: (context, snapshot) {      //ye phle hojao phir aage ka build kro  //jab future finished ho chuka work krna
+          switch(snapshot.connectionState){  
+            case ConnectionState.done:      //jab initialize ho chuka to kaam kro ab
               final user= FirebaseAuth.instance.currentUser;
-              if(user?.emailVerified ?? false){
-                print('Email Verified!!!');
-              } else{
-                print('Email Not Verified, Verify it first!!!');
+              if(user != null){
+                if(user.emailVerified){
+                  return const  Text('Email Verified!!SABASH!!');
+                }
+                else{
+                  return const VerifyEmailView();
+                }
               }
-              return const Text('DONE!');
-            default: return const Text('Loading.....');
+              else{
+                return const LoginView();
+              }
+              
+            default: return const CircularProgressIndicator();
           }
           
         }
-      ),
-    );
+      );
   }
-
 }
+
