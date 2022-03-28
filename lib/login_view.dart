@@ -31,7 +31,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text('Login and get Pleasure!')),
       body: Column(                 
         children: [                  
           TextField(
@@ -70,7 +70,7 @@ class _LoginViewState extends State<LoginView> {
                   }
               }                                                                 
             },
-            child:const Text('Login and get Pleasure!'),  
+            child:const Text('Login'),  
           ),
           TextButton(
             onPressed: (){

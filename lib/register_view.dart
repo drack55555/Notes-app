@@ -75,10 +75,10 @@ class _RegisterViewState extends State<RegisterView> {
                 }
               } 
             },
-            child:const Text('Register and be ready for Pleasure!!'),  
+            child:const Text('Register'),  
           ),
           TextButton(
-            onPressed: (){
+            onPressed: (){  //push...Until wala click krne k baad kaha jana(Nagivate) wo batata...
               Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           },
             child: const Text('Already Registered Beatchh!!?? Login Here then Stupid!')
