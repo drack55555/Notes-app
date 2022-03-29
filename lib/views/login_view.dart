@@ -1,4 +1,4 @@
-
+import 'dart:developer' as devtools show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +31,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login and get Pleasure!')),
+      appBar: AppBar(title: const Text('Login Here!')),
       body: Column(                 
         children: [                  
           TextField(
@@ -56,17 +56,16 @@ class _LoginViewState extends State<LoginView> {
             onPressed: () async {
               final email= _email.text;
               final password= _password.text;
-              try {
-                final userCredential= await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                print(userCredential);
-    
-              } on FirebaseAuthException 
+              try {   //sign in agar hua to 'Notes' screen mai Navigate krna...ni to catch trigger hoga..
+                await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+                  Navigator.of(context).pushNamedAndRemoveUntil('/notes/', (route) => false);
+              } on FirebaseAuthException
               catch(e){
                   if(e.code=='user-not-found'){
-                    print('Invalid Unser!');
+                    devtools.log('Invalid User!');
                   }
                   else if(e.code=='wrong-password'){
-                    print('worng password beatchhh');
+                    devtools.log('Wrong password!!!');
                   }
               }                                                                 
             },
@@ -76,7 +75,7 @@ class _LoginViewState extends State<LoginView> {
             onPressed: (){
               Navigator.of(context).pushNamedAndRemoveUntil('/register', (route) => false);
           },
-          child: const Text('Not registered yet? Register now Beatchhhh!!!')
+          child: const Text('Not registered yet? Register now!!!')
           ),
         ],
       ),

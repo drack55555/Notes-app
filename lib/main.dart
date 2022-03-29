@@ -1,24 +1,27 @@
+import 'dart:developer' as devtools show log;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:notesapp/firebase_options.dart';
-import 'package:notesapp/login_view.dart';
-import 'package:notesapp/register_view.dart';
-import 'package:notesapp/verify_email_view.dart';
+import 'package:notesapp/views/login_view.dart';
+import 'package:notesapp/views/register_view.dart';
+import 'package:notesapp/views/verify_email_view.dart';
 
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); //firebase suru mai he initialized hojayega 
   runApp(MaterialApp(               // onButtonPressed p initialize krne se phle and better 
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',        //way hai for case ki agar boht firebase related
       theme: ThemeData(             //onpressbutton hai to baar baar initialize ka
         primarySwatch: Colors.green,    //tension ni.
       ),
       home: const HomePage(),
       routes: {
-        '/login': (context)=> const LoginView(),
-        '/register': (context)=> const RegisterView(),
+        '/login/': (context)=> const LoginView(),
+        '/register/': (context)=> const RegisterView(),
+        '/notes/':(context) => const NotesView(),
       },
     ),
   );
@@ -84,7 +87,7 @@ class _NotesViewState extends State<NotesView> {
                   final shouldLogOut= await showLogOutDilogue(context);
                   if(shouldLogOut){
                     await FirebaseAuth.instance.signOut();
-                    Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+                    Navigator.of(context).pushNamedAndRemoveUntil('/login/', (_) => false);
                   }
                   break;
               }

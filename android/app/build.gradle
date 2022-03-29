@@ -67,6 +67,14 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
+dependencies {
+  compile 'com.android.support:multidex:1.0.1'
+}
+android {
+    defaultConfig {
+        multiDexEnabled true
+    }
+}
 
 android {                                                                                     
     defaultConfig {                                                                             

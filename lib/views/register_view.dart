@@ -1,4 +1,4 @@
-
+import 'dart:developer' as devtools show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -60,18 +60,18 @@ class _RegisterViewState extends State<RegisterView> {
               final password= _password.text;
               try {
                 final userCredential= await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-                print(userCredential);
+                devtools.log(userCredential.toString());
     
               } on FirebaseAuthException 
               catch(e){
                 if(e.code== 'weak-password'){
-                  print('weak password');
+                  devtools.log('weak password');
                 }
                 else if(e.code== 'email-already-in-use'){
-                  print('Email Already Registered!!!');
+                  devtools.log('Email Already Registered!!!');
                 }
                 else if(e.code=='invalid-email'){
-                  print('Invalid Email');
+                  devtools.log('Invalid Email');
                 }
               } 
             },
@@ -81,7 +81,7 @@ class _RegisterViewState extends State<RegisterView> {
             onPressed: (){  //push...Until wala click krne k baad kaha jana(Nagivate) wo batata...
               Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           },
-            child: const Text('Already Registered Beatchh!!?? Login Here then Stupid!')
+            child: const Text('Already Registered!? Login Here!')
           ),
         ],
       ),
