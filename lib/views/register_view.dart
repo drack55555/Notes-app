@@ -1,7 +1,7 @@
-import 'dart:developer' as devtools show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
+import 'package:notesapp/utilities/show_error_dialog.dart';
 
 //All details for Register will be here in RegisterView.....
 
@@ -60,21 +60,29 @@ class _RegisterViewState extends State<RegisterView> {
               final email= _email.text;
               final password= _password.text;
               try {
-                final userCredential= await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-                devtools.log(userCredential.toString());
-    
-              } on FirebaseAuthException 
-              catch(e){
+                await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+                final user= FirebaseAuth.instance.currentUser;
+                await user?.sendEmailVerification();
+                Navigator.of(context).pushNamed(verifyEmailRoute);//yaha pushNamed esi liye used kuki agar email
+                                   //maan lo galt daal iye ya change krna ho to upar ek back button aajayega taki
+              }                      //verification page se wapas register page p ja k to put correct email...
+              on FirebaseAuthException catch(e){    
                 if(e.code== 'weak-password'){
-                  devtools.log('weak password');
+                  await showErrorDialog(context, 'Weak Password! Errr!'); 
                 }
                 else if(e.code== 'email-already-in-use'){
-                  devtools.log('Email Already Registered!!!');
+                  await showErrorDialog(context, 'Email Already Registered!!!');
                 }
                 else if(e.code=='invalid-email'){
-                  devtools.log('Invalid Email');
+                  await showErrorDialog(context, 'Invalid Email');
                 }
-              } 
+                else{
+                await showErrorDialog(context, 'Error ${e.code}');
+                }
+              }
+               catch (e){
+                 await showErrorDialog(context, e.toString());
+               }
             },
             child:const Text('Register'),  
           ),
