@@ -1,6 +1,7 @@
 import 'dart:developer' as devtools show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:notesapp/constant/route.dart';
 
 //All details for Register will be here in RegisterView.....
 
@@ -79,7 +80,7 @@ class _RegisterViewState extends State<RegisterView> {
           ),
           TextButton(
             onPressed: (){  //push...Until wala click krne k baad kaha jana(Nagivate) wo batata...
-              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (route) => false);
           },
             child: const Text('Already Registered!? Login Here!')
           ),
