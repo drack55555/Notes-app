@@ -1,7 +1,7 @@
-import 'dart:developer' as devtools show log;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
+import '../utilities/show_error_dialog.dart';
 
 
 class LoginView extends StatefulWidget {
@@ -60,15 +60,21 @@ class _LoginViewState extends State<LoginView> {
               try {   //sign in agar hua to 'Notes' screen mai Navigate krna...ni to catch trigger hoga..
                 await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
                   Navigator.of(context).pushNamedAndRemoveUntil(notesRoute, (route) => false);
-              } on FirebaseAuthException
-              catch(e){
+              } 
+              on FirebaseAuthException catch(e){
                   if(e.code=='user-not-found'){
-                    devtools.log('Invalid User!');
+                    await showErrorDialog(context, 'User not Found!');
                   }
                   else if(e.code=='wrong-password'){
-                    devtools.log('Wrong password!!!');
+                    await showErrorDialog(context, 'Wrong Password');
                   }
-              }                                                                 
+                  else{
+                    await showErrorDialog(context, 'Error: ${e.code}');
+                  }
+              }
+              catch (e){      //if not FirebaseAuthException then come to this 'CATCH' block..
+                await showErrorDialog(context, e.toString());
+              }                                          
             },
             child:const Text('Login'),  
           ),
@@ -82,7 +88,7 @@ class _LoginViewState extends State<LoginView> {
       ),
     );
   }
-  
-
-  
 }
+
+
+
