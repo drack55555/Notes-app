@@ -59,7 +59,14 @@ class _LoginViewState extends State<LoginView> {
               final password= _password.text;
               try {   //sign in agar hua to 'Notes' screen mai Navigate krna...ni to catch trigger hoga..
                 await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+                
+                final user= FirebaseAuth.instance.currentUser;
+                if(user?.emailVerified ?? false){ //agar email verified hai to go to notes main screen
                   Navigator.of(context).pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                }
+                else{ //wrna go to verify screen
+                  Navigator.of(context).pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
+                }
               } 
               on FirebaseAuthException catch(e){
                   if(e.code=='user-not-found'){
