@@ -6,6 +6,9 @@ import 'package:notesapp/services/auth/auth_exception.dart';
 
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, FirebaseAuthException;
 
+
+//login button--->call-->auth service--->auth services logIn function--->talk with provider-->provider talk with firebase code--->which in turns talk with the firebase backend.
+//this talking is called END to END...
 class  FirebaseAuthProvider implements AuthProvider {
 
   @override
