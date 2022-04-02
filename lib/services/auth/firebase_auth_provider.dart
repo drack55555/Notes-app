@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:notesapp/firebase_options.dart';
 import 'package:notesapp/services/auth/auth_user.dart';
 import 'package:notesapp/services/auth/auth_provider.dart';
 import 'package:notesapp/services/auth/auth_exception.dart';
@@ -8,7 +10,7 @@ class  FirebaseAuthProvider implements AuthProvider {
 
   @override
   Future<AuthUser> createUser({required String email, required String password}) async {
-    try {   //creation of user if everyting goes fine...
+    try {   //creation of user if everything goes fine...
       await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
       final user= currUser;
       if(user != null){
@@ -96,6 +98,13 @@ class  FirebaseAuthProvider implements AuthProvider {
     else {
       throw UserNotLoggedInAuthException();
     }
+  }
+
+  @override
+  Future<void> initialize() async {
+    await Firebase.initializeApp(     //ye kra kuki firebase initialize sbse phle krna
+          options: DefaultFirebaseOptions.currentPlatform,   //tha and us k baad he login/
+    );
   }
 
 }

@@ -1,6 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
+import 'package:notesapp/services/auth/auth_exception.dart';
+import 'package:notesapp/services/auth_service.dart';
 import '../utilities/show_error_dialog.dart';
 
 
@@ -58,30 +61,24 @@ class _LoginViewState extends State<LoginView> {
               final email= _email.text;
               final password= _password.text;
               try {   //sign in agar hua to 'Notes' screen mai Navigate krna...ni to catch trigger hoga..
-                await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                
-                final user= FirebaseAuth.instance.currentUser;
-                if(user?.emailVerified ?? false){ //agar email verified hai to go to notes main screen
+                await AuthService.firebase().logIn(email: email, password: password);                
+                final user= AuthService.firebase().currUser;
+                if(user?.isEmailVerified ?? false){ //agar email verified hai to go to notes main screen
                   Navigator.of(context).pushNamedAndRemoveUntil(notesRoute, (route) => false);
                 }
                 else{ //wrna go to verify screen
                   Navigator.of(context).pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
                 }
               } 
-              on FirebaseAuthException catch(e){
-                  if(e.code=='user-not-found'){
-                    await showErrorDialog(context, 'User not Found!');
-                  }
-                  else if(e.code=='wrong-password'){
-                    await showErrorDialog(context, 'Wrong Password');
-                  }
-                  else{
-                    await showErrorDialog(context, 'Error: ${e.code}');
-                  }
+              on UserNotFoundAuthException{
+                await showErrorDialog(context, 'User not Found!');
               }
-              catch (e){      //if not FirebaseAuthException then come to this 'CATCH' block..
-                await showErrorDialog(context, e.toString());
-              }                                          
+              on WrongPasswordAuthException{
+                await showErrorDialog(context, 'Wrong Password');
+              }
+              on GenericAuthException{
+                await showErrorDialog(context, 'Authentication Error!');
+              }                                         
             },
             child:const Text('Login'),  
           ),
