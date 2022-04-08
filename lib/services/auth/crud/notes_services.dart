@@ -4,7 +4,6 @@
 //Db Browser sqlite mai sql table bnaye..user ka and Notes ka....
 
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:notesapp/constant/route.dart';
@@ -18,57 +17,129 @@ import 'package:path/path.dart' show join;
 class NotesService{
   Database? _db;
 
+  List<DatabaseNote> _notes = []; //this is our cache where all notes will be kept...
+  //everything from outside will be read using streamcontroller.._notes just going to hold notes....
+  //this streamcontroller will be the pipe for _notes .....broadcast--listen to the changes done to the streamcontroller...
+
+  static final NotesService _shared= NotesService._sharedInstance();
+  NotesService._sharedInstance();
+  factory NotesService() => _shared;
+
+  final _notesStreamController = StreamController<List<DatabaseNote>>.broadcast();
+
+//this allNotes will subscribe to _notesStreamController and get all notes from that controller..
+//as the StreamController contains the _notes=[] thing which holds all notes..
+  Stream<List<DatabaseNote>> get allNotes{
+    return _notesStreamController.stream; //getter for getting all Notes...
+  }
+
+
+  //get the user from database and if user doesn't exist, we're gonna create that user..
+  //and then return that fetched or created user back to the caller..
+  Future<DatabaseUser> getOrCreateUser({required String email})async{
+    try {
+      final user= await getUser(email: email);
+      return user;
+    } 
+    on CouldNotFindUser{
+      final createdUser= await createUser(email: email);
+      return createdUser;
+    }
+    catch (e){
+      rethrow; 
+    }
+    
+
+  }
+
+  //purpose of _cacheNotes is to read all the notes from database and place in notesstreamcontroller....
+  Future<void> _cacheNotes() async{
+    final allNotes = await getAllNotes(); 
+    //here allNotes will be Iterable as getAllNotes return one...so convert it to list then add to _notes..
+    _notes= allNotes.toList();
+    _notesStreamController.add(_notes); //telling stream controller, hey, here's a new value....
+
+
+  }
+
   Future<DatabaseNote> updateNote({required DatabaseNote note, required String text})async{
-      final db= _getDatabaseOrThrow();
+    await _ensureDbIsOpen();
+    final db= _getDatabaseOrThrow();
 
-      await getNote(id: note.id);
+    //make sure note exists..
+    await getNote(id: note.id);
 
-      final updateCount = await db.update(noteTable, {textColumn: text, isSyncedWithCloudColumn: 0});
+    //updated the DB...
+    final updateCount = await db.update(noteTable, {textColumn: text, isSyncedWithCloudColumn: 0});
 
-      if(updateCount ==0){
-        throw CouldNotUpdateNote();
-      }
-      else{
-        return await getNote(id: note.id);
-      }
+    if(updateCount ==0){
+      throw CouldNotUpdateNote();
+    }
+    else{
+      final updatedNote=  await getNote(id: note.id); //we have updated the database..and to get that updated one we call getNode()..
+      //now update local cache...by removing the old one and..
+        _notes.removeWhere((note) => note.id == updatedNote.id);
+        _notes.add(updatedNote); //...and adding the updated note..
+        _notesStreamController.add(_notes);
+        return updatedNote;
+    }
   }
 
   Future<Iterable<DatabaseNote>> getAllNotes() async{
+    await _ensureDbIsOpen();
     final db= _getDatabaseOrThrow();
     final notes= await db.query(noteTable);
 
     return notes.map((noteRow) => DatabaseNote.fromRow(noteRow));
    
   }
-
+    //to get updated things from database...
   Future<DatabaseNote> getNote({required int id}) async{
+    await _ensureDbIsOpen();
     final db= _getDatabaseOrThrow();
+    //upon we trying to read a note from database, we are just making a query to database and if we can find that item 
+    //we are returning that by creating a DatabaseNote from a Row...
     final notes= await db.query(noteTable, limit: 1, where: 'id = ?', whereArgs: [id]);
 
     if(notes.isEmpty){
       throw CouldNotFindNote();
     }
     else{
-      return DatabaseNote.fromRow(notes.first);
+      final note= DatabaseNote.fromRow(notes.first); //new note..
+      _notes.removeWhere((note) =>note.id == id);//we are removing the old note(using its Id)which needs to be updated and..
+      _notes.add(note);         //...and adding the new note just got...this is updating in local cache..
+      _notesStreamController.add(_notes); //and then updating it to the world ..i.e. UI for everyone to see..
+
+      return note;
     }
   }
 
   Future<int> deleteAllNotes() async{
     final db= _getDatabaseOrThrow();
-    return await db.delete(noteTable);
+    final numberOfDeletion= await db.delete(noteTable);
+
+    _notes= []; //local cache v update ho gya ki sara notes delete ho gya hai..
+    _notesStreamController.add(_notes); // added to stream controller to reflect/update in the UI..
+
+    return numberOfDeletion;
   }
 
   Future<void> deleteNote({required int id}) async{
+    await _ensureDbIsOpen();
     final db=  _getDatabaseOrThrow();
     
     //from noteTable delete an object where it's column id= ? (something) and passing that "something" in whereArgs...
     final deletedCount= await db.delete(noteTable, where: 'id=?', whereArgs: [id]);
-    if(deletedCount !=1){
+    if(deletedCount ==0){
       throw CouldNotDeleteNote();
+    }else{
+        _notes.removeWhere((note)=> note.id == id); //remove that note from local cache..
+        _notesStreamController.add(_notes);
     }
   }  
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async{
+    await _ensureDbIsOpen();
     final db= _getDatabaseOrThrow();
     
     //make sure owner exists in the database with correct id...
@@ -94,11 +165,15 @@ class NotesService{
       isSyncedWithCloud: true
     );
 
+    _notes.add(note);
+    _notesStreamController.add(_notes);
+
     return note;
     
   }
 
   Future<DatabaseUser> getUser({required String email}) async{
+    await _ensureDbIsOpen();
     final db= _getDatabaseOrThrow();
     
     final result = await db.query(userTable, limit: 1, where: 'email = ?', whereArgs:  [email.toLowerCase()]);  
@@ -125,6 +200,7 @@ class NotesService{
   }
 
   Future<void> deleteUser({required String email}) async{
+    await _ensureDbIsOpen();
     final db= _getDatabaseOrThrow();
     final deletedCount= await db.delete(userTable, where: 'email=?', whereArgs: [email.toLowerCase()]);
     if(deletedCount !=1){
@@ -153,6 +229,15 @@ class NotesService{
     }
   }
 
+  Future<void> _ensureDbIsOpen() async{
+    try{
+      await open();
+    }
+    on DatabaseAlreadyOpenException{
+      
+    }
+  }
+
   Future<void> open() async{ //opens the database...
     if(_db != null){
       throw DatabaseAlreadyOpenException();
@@ -162,14 +247,11 @@ class NotesService{
       final dbPath =join(docsPath.path, dbName); //get actal path of our database...database name will be joined with path of our document folder..
       final db= await openDatabase(dbPath);
       _db= db;
-
-     
-
+      //create user table..
       await db.execute(createUserTable);
-
-      
-
+      //create note table..
       await db.execute(createNoteTable);
+      await _cacheNotes(); //means...after creating all tables place the notes in cache..
     }
     on MissingPlatformDirectoryException{
       throw UnableToGetDocumentDirectory();
@@ -177,6 +259,7 @@ class NotesService{
   }
 
 }
+
 
 
 @immutable //since constructor is const we can tag it as Immutable..

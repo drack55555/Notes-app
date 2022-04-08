@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
 import 'package:notesapp/services/auth/auth_exception.dart';

@@ -1,6 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
+import 'package:notesapp/services/auth/crud/notes_services.dart';
 import 'package:notesapp/services/auth_service.dart';
 
 import '../enums/menu_action.dart';
@@ -13,6 +13,22 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> {
+  late final NotesService _notesService;
+  String get userEmail => AuthService.firebase().currUser!.email!;  // ! ---> force Unwrap that..
+
+  @override
+  void initState() {
+    _notesService = NotesService();
+    //open database.. 
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _notesService.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +59,27 @@ class _NotesViewState extends State<NotesView> {
           )
         ],
       ),
-      body: const Text('hello nubs'),
+      body:FutureBuilder(
+        future: _notesService.getOrCreateUser(email: userEmail), //create new user or get it using the email given..
+        builder: (context, snapshot){
+          switch(snapshot.connectionState){
+            case ConnectionState.done:
+              return StreamBuilder(
+                stream: _notesService.allNotes,
+                builder: (context, snapshot){
+                  switch(snapshot.connectionState){
+                    case ConnectionState.waiting:
+                      return const Text('Waiting for all Notes...');
+                    default: 
+                      return const CircularProgressIndicator();
+                  }
+                },
+              );
+            default: return  const CircularProgressIndicator();
+            
+          }
+        },
+      ),
     );
   }
 }
