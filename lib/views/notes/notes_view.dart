@@ -3,7 +3,7 @@ import 'package:notesapp/constant/route.dart';
 import 'package:notesapp/services/auth/crud/notes_services.dart';
 import 'package:notesapp/services/auth_service.dart';
 
-import '../enums/menu_action.dart';
+import '../../enums/menu_action.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({ Key? key }) : super(key: key);
@@ -24,7 +24,7 @@ class _NotesViewState extends State<NotesView> {
   }
 
   @override
-  void dispose() {
+  void dispose() { //Close db...
     _notesService.close();
     super.dispose();
   }
@@ -33,8 +33,14 @@ class _NotesViewState extends State<NotesView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Main UI'),
+        title: const Text('Your Notes'),
         actions: [
+          IconButton(
+            onPressed: (){
+              Navigator.of(context).pushNamed(newNoteRoute);
+            },
+            icon: const Icon(Icons.add),
+          ),
           PopupMenuButton<MenuAction>(  //for 3 dots menu options
             onSelected: (value) async {
               switch(value) {
@@ -44,7 +50,8 @@ class _NotesViewState extends State<NotesView> {
                   if(shouldLogOut){
                     await AuthService.firebase().logOut();
                     Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (_) => false);
-                  }
+                  }                     //after goin to note create screen..the back button 
+                                        //u see is also there to go to main UI...
                   break;
               }
             },  
