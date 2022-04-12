@@ -22,10 +22,16 @@ class NotesService{
   //this streamcontroller will be the pipe for _notes .....broadcast--listen to the changes done to the streamcontroller...
 
   static final NotesService _shared= NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance(){
+    _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
+      onListen: (){
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
   factory NotesService() => _shared;
 
-  final _notesStreamController = StreamController<List<DatabaseNote>>.broadcast();
+  late final StreamController<List<DatabaseNote>> _notesStreamController ;
 
 //this allNotes will subscribe to _notesStreamController and get all notes from that controller..
 //as the StreamController contains the _notes=[] thing which holds all notes..
