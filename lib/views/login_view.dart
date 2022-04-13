@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
 import 'package:notesapp/services/auth/auth_exception.dart';
 import 'package:notesapp/services/auth_service.dart';
-import '../utilities/show_error_dialog.dart';
+import 'package:notesapp/utilities/dialogs/error_dialog.dart';
 
 
 class LoginView extends StatefulWidget {

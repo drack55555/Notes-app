@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:notesapp/constant/route.dart';
 import 'package:notesapp/services/auth/crud/notes_services.dart';
 import 'package:notesapp/services/auth_service.dart';
+import 'package:notesapp/utilities/dialogs/logout_dialog.dart';
+import 'package:notesapp/views/notes/note_list_view.dart';
 
 import '../../enums/menu_action.dart';
 
@@ -46,7 +48,7 @@ class _NotesViewState extends State<NotesView> {
               switch(value) {
                 
                 case MenuAction.logout:
-                  final shouldLogOut= await showLogOutDilogue(context);
+                  final shouldLogOut= await showLogOutDialog(context);
                   if(shouldLogOut){
                     await AuthService.firebase().logOut();
                     Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (_) => false);
@@ -79,27 +81,18 @@ class _NotesViewState extends State<NotesView> {
                     case ConnectionState.active:
                       if(snapshot.hasData){
                         final allNotes= snapshot.data as List<DatabaseNote>;
-                        return ListView.builder(
-                          itemCount: allNotes.length,
-                          itemBuilder: (context, index){
-                            final note = allNotes[index];// current note jis p hai wo..
-                            return ListTile(
-                              title: Text(
-                                note.text,
-                                maxLines: 1,
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          },
+                        return NotesListView(
+                          notes: allNotes,
+                          onDeleteNote: (note)async{
+                            await _notesService.deleteNote(id: note.id);
+                          }
                         );
                       }
                       else{
-                         const CircularProgressIndicator();
+                          return const CircularProgressIndicator();
                       }
                       
-                      return const Text('Waiting for all Notes...');
-                    default: 
+                    default:
                       return const CircularProgressIndicator();
                   }
                 },
@@ -114,30 +107,3 @@ class _NotesViewState extends State<NotesView> {
 }
 
 
-Future<bool> showLogOutDilogue(BuildContext context){
-  return showDialog<bool>(
-    context: context,
-    builder: (context){
-      return AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: const Text('Cancel'),
-            ),
-            TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text('Log out'),
-          ),
-        ],
-      );
-    },
-  ).then((value) => value ?? false); //agar wo logout dilogue box k jagh phone ka back button use kr liya and 
-}             //dilogue box ko he band kr diya without choosing "yes-logout" or "no"..tb return false..
-            //wrna if chosen a value i.e. "yes-logout" or "no" tb to koi dikkat he ni..tb return that value....
-  
