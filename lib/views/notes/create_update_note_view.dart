@@ -1,15 +1,18 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:notesapp/services/auth/crud/notes_services.dart';
 import 'package:notesapp/services/auth_service.dart';
+import 'package:notesapp/utilities/generics/get_argument.dart';
 
-class NewNoteView extends StatefulWidget {
-  const NewNoteView({ Key? key }) : super(key: key);
+class CreateUpdateNoteView extends StatefulWidget {
+  const CreateUpdateNoteView({ Key? key }) : super(key: key);
 
   @override
-  State<NewNoteView> createState() => _NewNotesViewtate();
+  State<CreateUpdateNoteView> createState() => _CreateUpdateNoteViewState();
 }
 
-class _NewNotesViewtate extends State<NewNoteView> {
+class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
   DatabaseNote? _note;
   late final NotesService _notesService;
@@ -39,7 +42,15 @@ class _NewNotesViewtate extends State<NewNoteView> {
   }
 
   //In this..we see if we have created this note before just return but if not created then create it and get back to us..
-  Future<DatabaseNote> createNewNote() async{
+  Future<DatabaseNote> createOrGetExistingNote() async{
+
+    final widgetNote= context.getArgument<DatabaseNote>();
+    if(widgetNote != null) { //meaning user tapped on existing note and ended up on the screen
+      _note= widgetNote;
+      _textController.text = widgetNote.text;
+      return widgetNote;
+    }
+    
     final existingNote = _note;
     if(existingNote != null){
       return existingNote;
@@ -48,7 +59,9 @@ class _NewNotesViewtate extends State<NewNoteView> {
     final currUser = AuthService.firebase().currUser!;
     final email = currUser.email!;
     final owner = await _notesService.getUser(email: email);
-    return await _notesService.createNote(owner: owner);
+    final newNote=  await _notesService.createNote(owner: owner);
+    _note= newNote;
+    return newNote;
   }
 
   //if pressed + icon to create note but wrote nothing(left empty) and pressed back button then don't create that note..delete it cause it's an empty note..
@@ -76,8 +89,6 @@ class _NewNotesViewtate extends State<NewNoteView> {
     super.dispose();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,11 +96,10 @@ class _NewNotesViewtate extends State<NewNoteView> {
         title: const Text('New Note'),
       ),
       body: FutureBuilder(
-        future: createNewNote(),
+        future: createOrGetExistingNote(),
         builder: (context,snapshot){
           switch (snapshot.connectionState){
             case ConnectionState.done:
-              _note = snapshot.data as DatabaseNote; //this is how we get our notes from our snapshot
               _setupTextControllerListener();
               return TextField( //text field will send msg to texteditingController and say that it's text has changed..
                 controller: _textController,
