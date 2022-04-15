@@ -1,13 +1,13 @@
+
 //Grab and work with DATABASE..grab new users, create new users...delete new users...find users...
 //create notes..delete notes..etc..
 
 //Db Browser sqlite mai sql table bnaye..user ka and Notes ka....
 
 import 'dart:async';
-import 'package:flutter/services.dart';
+import 'dart:developer';
 import 'package:flutter/widgets.dart';
-import 'package:notesapp/constant/route.dart';
-import 'package:notesapp/services/auth/auth_exception.dart';
+import 'package:notesapp/extensions/list/filter.dart';
 import 'package:notesapp/services/auth/crud/crud_exceptions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,6 +20,8 @@ class NotesService{
   List<DatabaseNote> _notes = []; //this is our cache where all notes will be kept...
   //everything from outside will be read using streamcontroller.._notes just going to hold notes....
   //this streamcontroller will be the pipe for _notes .....broadcast--listen to the changes done to the streamcontroller...
+
+  DatabaseUser? _user;
 
   static final NotesService _shared= NotesService._sharedInstance();
   NotesService._sharedInstance(){
@@ -36,19 +38,33 @@ class NotesService{
 //this allNotes will subscribe to _notesStreamController and get all notes from that controller..
 //as the StreamController contains the _notes=[] thing which holds all notes..
   Stream<List<DatabaseNote>> get allNotes{
-    return _notesStreamController.stream; //getter for getting all Notes...
-  }
-
+    return _notesStreamController.stream.filter((note) {
+      final currentUser= _user;    //Stream contains  List of Notes but here note is getting one note..
+      if(currentUser!= null){       //...at a time..this is the Beauty of Creating our own extensions..
+        return note.userId == currentUser.id;  //...we can droll down our existing object an grab whatever we need from it using extensions..
+      }   
+      else{
+        throw UserShouldBeSetBeforeReadingAllNotes();
+      }     //if you are reading all Notes from this interface you need to make sure that the current user was set when called..
+            //..u called this fucntion..
+    });   
+  }                          
 
   //get the user from database and if user doesn't exist, we're gonna create that user..
   //and then return that fetched or created user back to the caller..
-  Future<DatabaseUser> getOrCreateUser({required String email})async{
+  Future<DatabaseUser> getOrCreateUser({required String email, bool setAsCurrentUser = true})async{
     try {
-      final user= await getUser(email: email);
+      final user= await getUser(email: email);// is we could retrieve that user from the DB..
+      if(setAsCurrentUser){//.. and this bool is true..
+        _user = user;//...the we set our own user to this user...
+      }
       return user;
     } 
     on CouldNotFindUser{
-      final createdUser= await createUser(email: email);
+      final createdUser= await createUser(email: email);// otherwise if we have to create the user..
+      if(setAsCurrentUser){//...and this is True...
+        _user= createdUser;//..then we set this 'current user' to the CreatedUser...
+      }
       return createdUser;
     }
     catch (e){
@@ -76,7 +92,12 @@ class NotesService{
     await getNote(id: note.id);
 
     //updated the DB...
-    final updateCount = await db.update(noteTable, {textColumn: text, isSyncedWithCloudColumn: 0});
+    final updateCount = await db.update(
+      noteTable,
+      {textColumn: text, isSyncedWithCloudColumn: 0},
+      where: 'id = ?', whereArgs: [note.id], //ye add kiye tb ja kr hr note same ni hojayega after hot reload...
+      );         //..and bss ussi ka note update hoga jiska id avi hai apne pass...
+    
 
     if(updateCount ==0){
       throw CouldNotUpdateNote();
