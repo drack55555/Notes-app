@@ -1,3 +1,6 @@
+
+//These are all the things that could go wrong when the user is working with our notes Service..
+
 class DatabaseAlreadyOpenException implements Exception{}
 class UnableToGetDocumentDirectory implements Exception{}
 
