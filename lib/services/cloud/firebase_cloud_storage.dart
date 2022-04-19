@@ -38,27 +38,24 @@ class FirebaseCloudStorage{// This is how you taalk with firestore.
       return await notes
       .where(ownerUserIdFieldName,isEqualTo: ownerUserId)
       .get()
-      .then((value) => value.docs.map((doc){
-        return CloudNote(
-          documentId: doc.id,
-          ownerUserId: doc.data()[ownerUserIdFieldName] as String,
-          text: doc.data()[textFieldName] as String,  
-        );       
-      }
-      ));
+      .then((value) => value.docs.map(
+            (doc) => CloudNote.fromSnapshot(doc)),
+      );
     }
     catch(e){
       throw CouldNotGetAllNotesException();
     }
   }
 
-  void createNewNote({required String ownerUserId}) async{
+  Future<CloudNote> createNewNote({required String ownerUserId}) async{
 
     //everything you add here will be packaged in a DOCUMENT that will be stored in your cloud firebase account..
-    await notes.add({
+    final document = await notes.add({
       ownerUserIdFieldName: ownerUserId,
       textFieldName: '',
     });
+    final fetchedNote= await document.get();
+    return CloudNote(documentId: fetchedNote.id, ownerUserId: ownerUserId, text: '');
   }
 
   static final FirebaseCloudStorage _shared= FirebaseCloudStorage._sharedInstance();
