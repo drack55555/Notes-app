@@ -40,6 +40,7 @@ dependencies:
   firebase_analytics: ^9.1.2
   sqflite: ^2.0.2
   path_provider: ^2.0.9
+  share_plus: ^4.0.4
 
 dev_dependencies:
   flutter_test:
