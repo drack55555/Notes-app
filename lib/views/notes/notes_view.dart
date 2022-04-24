@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' show ReadContext;
 import 'package:notesapp/constant/route.dart';
+import 'package:notesapp/services/auth/bloc/auth_bloc.dart';
+import 'package:notesapp/services/auth/bloc/auth_event.dart';
 import 'package:notesapp/services/auth_service.dart';
 import 'package:notesapp/services/cloud/cloud_note.dart';
 import 'package:notesapp/services/cloud/firebase_cloud_storage.dart';
@@ -50,10 +53,9 @@ class _NotesViewState extends State<NotesView> {
                 case MenuAction.logout:
                   final shouldLogOut= await showLogOutDialog(context);
                   if(shouldLogOut){
-                    await AuthService.firebase().logOut();
-                    Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (_) => false);
-                  }                     //after goin to note create screen..the back button 
-                                        //u see is also there to go to main UI...
+                    context.read<AuthBloc>().add(const AuthEventLogOut());
+                  }                     //on receiving the auth Log out event..it will go to login screen
+                                        // automatically because of it's code...
                   break;
               }
             },  

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notesapp/constant/route.dart';
 import 'package:notesapp/services/auth/auth_exception.dart';
-import 'package:notesapp/services/auth_service.dart';
+import 'package:notesapp/services/auth/bloc/auth_bloc.dart';
+import 'package:notesapp/services/auth/bloc/auth_event.dart';
 import 'package:notesapp/utilities/dialogs/error_dialog.dart';
 
 
@@ -59,14 +61,7 @@ class _LoginViewState extends State<LoginView> {
               final email= _email.text;
               final password= _password.text;
               try {   //sign in agar hua to 'Notes' screen mai Navigate krna...ni to catch trigger hoga..
-                await AuthService.firebase().logIn(email: email, password: password);                
-                final user= AuthService.firebase().currUser;
-                if(user?.isEmailVerified ?? false){ //agar email verified hai to go to notes main screen
-                  Navigator.of(context).pushNamedAndRemoveUntil(notesRoute, (route) => false);
-                }
-                else{ //wrna go to verify screen
-                  Navigator.of(context).pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
-                }
+                context.read<AuthBloc>().add(AutheEventLogIn(email, password));
               } 
               on UserNotFoundAuthException{
                 await showErrorDialog(context, 'User not Found!');
