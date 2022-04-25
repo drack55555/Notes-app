@@ -13,7 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>{
       await provider.initialize();
       final user= provider.currUser;
       if(user == null){
-        emit(const AuthStateLoggedOut());
+        emit(const AuthStateLoggedOut(null));
       }
       else if(!user.isEmailVerified){
         emit(const AuthStateNeesVerification());
@@ -25,7 +25,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>{
 
     //Log In
     on<AutheEventLogIn>((event, emit) async{
-      emit(const AuthStateLoading());
       final email=  event.email;
       final password= event.password;
       try {
@@ -33,7 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>{
         emit(AuthStateLoggedIn(user));
       }
       on Exception catch (e){
-        emit(AuthStateLogInFailure(e));
+        emit(AuthStateLoggedOut(e));
       }
     });
 
@@ -42,7 +41,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState>{
       try {  //on a LogOut event..
         emit(const AuthStateLoading());// first go to the loading state..
         await provider.logOut(); // and then if it could log the user out..
-        emit(const AuthStateLoggedOut()); //then it actually says that I'm logged out... and to Main fun..Logged out event is send..now go to main file to understand..
+        emit(const AuthStateLoggedOut(null)); //then it actually says that I'm logged out... and to Main fun..Logged out event is send..now go to main file to understand..
       } on Exception catch (e) {
         emit(AuthStateLogOutFailure(e));
       } 

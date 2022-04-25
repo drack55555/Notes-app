@@ -22,19 +22,14 @@ class AuthStateLoggedIn extends AuthState{
 }
 
 
-class AuthStateLogInFailure extends AuthState{
-  final Exception exception;
-  const   AuthStateLogInFailure(this.exception);
-}
-
-
 class AuthStateNeesVerification extends AuthState{
   const AuthStateNeesVerification();
 }
 
 
 class AuthStateLoggedOut extends AuthState{
-  const AuthStateLoggedOut();
+  final Exception? exception;
+  const AuthStateLoggedOut(this.exception);
 }
 
 
