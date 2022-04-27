@@ -29,10 +29,6 @@ void main() {
         child: const HomePage(),
       ),
       routes: {
-        loginRoute: (context) => const LoginView(),
-        registerRoute: (context) => const RegisterView(),
-        notesRoute: (context) => const NotesView(),
-        verifyEmailRoute: (context) => const VerifyEmailView(),
         createOrUpdateNoteRoute: (context) => const CreateUpdateNoteView(),
       },
     ),
@@ -42,8 +38,8 @@ void main() {
 //All details for Login will be here in LoginView.....
 
 //Now Homepage p he register and login ka rahega..login/register jo krna kro....
-// class HomePage extends StatelessWidget {
-//   const HomePage({ Key? key }) : super(key: key);
+class HomePage extends StatelessWidget {
+  const HomePage({ Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +55,9 @@ void main() {
       else if (state is AuthStateLoggedOut){// when the event received is LOGGEDOUT ..return to Login view..
         return const LoginView();
       }
+      else if(state is  AuthStateRegistering){
+        return const RegisterView();
+      }
       else{
         return const Scaffold(
           body: CircularProgressIndicator(),
@@ -66,14 +65,7 @@ void main() {
       }
     },);
   }
-
-
-// agar ye 'this' ni daalenge to error dega dart because hmlog phone button use kr k boolean return
-// type ko bool return krne se rok rhe hai to mtlb bool return ni ho rha so kaise function ko
-// bool return type diye hai...so to solve this issue we use 'this'....
-
-class HomePage extends StatelessWidget {
-  const HomePage({ Key? key }) : super(key: key);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +91,6 @@ class HomePage extends StatelessWidget {
       }
     );
   }
-}
 
 
 

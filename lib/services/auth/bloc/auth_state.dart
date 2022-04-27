@@ -1,5 +1,4 @@
-
-
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:notesapp/services/auth/auth_user.dart';
 
@@ -9,15 +8,19 @@ abstract class AuthState {
 }
 
 
-//loading state
-class AuthStateLoading extends AuthState{
-  const AuthStateLoading();
+class AuthStateUninitialized extends AuthState{
+  const AuthStateUninitialized();
+}
+
+class AuthStateRegistering extends AuthState{
+  final Exception? exception;
+  const AuthStateRegistering(this.exception);
 }
 
 //logged in state
 class AuthStateLoggedIn extends AuthState{
   //after log in app only wants current user from us to support the logging in
-  final AuthUser user;
+  final AuthUser user;  
   const AuthStateLoggedIn(this.user);
 }
 
@@ -27,15 +30,12 @@ class AuthStateNeesVerification extends AuthState{
 }
 
 
-class AuthStateLoggedOut extends AuthState{
+class AuthStateLoggedOut extends AuthState with EquatableMixin{
   final Exception? exception;
-  const AuthStateLoggedOut(this.exception);
+  final bool isLoading;
+  const AuthStateLoggedOut({required this.exception, required this.isLoading});
+
+  @override
+  List<Object?> get props => [exception, isLoading];
 }
-
-
-class AuthStateLogOutFailure extends AuthState{
-  final Exception exception;
-  const   AuthStateLogOutFailure(this.exception);
-}
-
 
