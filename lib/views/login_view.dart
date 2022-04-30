@@ -52,42 +52,52 @@ class _LoginViewState extends State<LoginView> {
       },
       child: Scaffold(
           appBar: AppBar(title: const Text('Login Here!')),
-          body: Column(
-            children: [
-              TextField(
-                controller: _email,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'Enter your Email',
+          body: Padding(
+            padding: const EdgeInsets.all(7.0),
+            child: Column(
+              children: [
+                const Text('Please log into your account in order to interact with and create notes!'),
+                TextField(
+                  controller: _email,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your Email',
+                  ),
                 ),
-              ),
-              TextField(
-                controller: _password,
-                obscureText: true,
-                autocorrect: false,
-                enableSuggestions: false,
-                decoration: const InputDecoration(
-                  hintText: 'Enter your password here',
+                TextField(
+                  controller: _password,
+                  obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your password here',
+                  ),
                 ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final email = _email.text;
-                  final password = _password.text;
-                  
-                  //take above email and password and pass that event to our auth bloc...
-                  context.read<AuthBloc>().add(AutheEventLogIn(email, password));
-                },
-                child: const Text('Login'),
-              ),
-              TextButton( //hook register button to our Auth Bloc..i.e when register button is tapped, send autheventshouldregister() to the bloc...
-                  onPressed: () {
-                    context.read<AuthBloc>().add(const AuthEventShouldRegister());
+                TextButton(
+                  onPressed: () async {
+                    final email = _email.text;
+                    final password = _password.text;
+                    
+                    //take above email and password and pass that event to our auth bloc...
+                    context.read<AuthBloc>().add(AutheEventLogIn(email, password));
                   },
-                  child: const Text('Not registered yet? Register now!!!')),
-            ],
+                  child: const Text('Login'),
+                ),
+                TextButton( //hook register button to our Auth Bloc..i.e when register button is tapped, send autheventshouldregister() to the bloc...
+                    onPressed: () {
+                      context.read<AuthBloc>().add(const AuthEventForgotPassword());
+                    },
+                    child: const Text('I forgot my password!')),
+
+                TextButton( //hook register button to our Auth Bloc..i.e when register button is tapped, send autheventshouldregister() to the bloc...
+                    onPressed: () {
+                      context.read<AuthBloc>().add(const AuthEventShouldRegister());
+                    },
+                    child: const Text('Not registered yet? Register now!!!')),
+              ],
+            ),
           ),
         ),
     );

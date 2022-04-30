@@ -7,6 +7,7 @@ import 'package:notesapp/services/auth/bloc/auth_event.dart';
 import 'package:notesapp/services/auth/bloc/auth_state.dart';
 import 'package:notesapp/services/auth/firebase_auth_provider.dart';
 import 'package:notesapp/services/auth_service.dart';
+import 'package:notesapp/views/fogot_password_view.dart';
 import 'package:notesapp/views/login_view.dart';
 import 'package:notesapp/views/notes/create_update_note_view.dart';
 import 'package:notesapp/views/notes/notes_view.dart';
@@ -65,6 +66,9 @@ class HomePage extends StatelessWidget {
       }
       else if (state is AuthStateLoggedOut){// when the event received is LOGGEDOUT ..return to Login view..
         return const LoginView();
+      }
+      else if(state is AuthStateForgotPassword){
+        return const ForgotPasswordView();
       }
       else if(state is  AuthStateRegistering){
         return const RegisterView();

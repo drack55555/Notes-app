@@ -19,6 +19,15 @@ class AuthStateRegistering extends AuthState{
   const AuthStateRegistering({required this.exception, required bool isLoading}) : super(isLoading: isLoading);
 }
 
+
+class AuthStateForgotPassword extends AuthState{
+  final Exception? exception;
+  final bool hasSendEmail;
+  
+  const AuthStateForgotPassword({required this.exception,required this.hasSendEmail, required bool isLoading}) : super(isLoading: isLoading);
+}
+
+
 //logged in state
 class AuthStateLoggedIn extends AuthState{
   //after log in app only wants current user from us to support the logging in
