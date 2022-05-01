@@ -1,6 +1,6 @@
 # notesapp
 
-A new Flutter project.
+A Simple Note taking app.
 
 ## Getting Started
 
